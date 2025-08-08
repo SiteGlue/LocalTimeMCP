@@ -1,0 +1,56 @@
+{
+    "name": "local-time-mcp-server",
+    "version": "1.0.0",
+    "description": "MCP server providing accurate local time information for dental practice voice agents",
+    "type": "module",
+    "main": "src/index.js",
+    "bin": {
+      "local-time-mcp-server": "src/index.js"
+    },
+    "scripts": {
+      "start": "node src/vapi-mcp-server.js",
+      "start:mcp": "node src/index.js",
+      "start:http": "node src/http-server.js", 
+      "dev": "node --watch src/vapi-mcp-server.js",
+      "test": "node src/test.js",
+      "test:vapi": "node src/test-vapi-integration.js",
+      "build": "echo 'No build step required for MCP server'",
+      "deploy": "git push heroku main",
+      "logs": "heroku logs --tail",
+      "local-test": "node src/local-test.js"
+    },
+    "keywords": [
+      "mcp",
+      "model-context-protocol",
+      "timezone",
+      "local-time",
+      "dental-practice",
+      "voice-agent",
+      "vapi",
+      "business-hours"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+      "@modelcontextprotocol/sdk": "^0.5.0",
+      "moment-timezone": "^0.5.45",
+      "libphonenumber-js": "^1.11.7",
+      "express": "^4.18.2",
+      "cors": "^2.8.5"
+    },
+    "devDependencies": {
+      "@types/node": "^20.0.0"
+    },
+    "engines": {
+      "node": ">=18.0.0",
+      "npm": ">=9.0.0"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/yourusername/local-time-mcp-server.git"
+    },
+    "homepage": "https://github.com/yourusername/local-time-mcp-server#readme",
+    "bugs": {
+      "url": "https://github.com/yourusername/local-time-mcp-server/issues"
+    }
+  }
