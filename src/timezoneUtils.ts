@@ -173,6 +173,181 @@ export function getCurrentTimeInTimezone(timezone: string, format: '12' | '24' =
 }
 
 /**
+ * Gets current date in a specific timezone with various format options
+ */
+export function getCurrentDateInTimezone(timezone: string, format: 'short' | 'medium' | 'long' | 'full' | string = 'medium'): {
+  date: string;
+  dayOfWeek: string;
+  month: string;
+  dayOfMonth: number;
+  year: number;
+  quarter: number;
+  weekOfYear: number;
+  dayOfYear: number;
+} {
+  try {
+    const now = moment.tz(timezone);
+    
+    let dateFormat: string;
+    switch (format) {
+      case 'short':
+        dateFormat = 'M/D/YYYY';
+        break;
+      case 'medium':
+        dateFormat = 'MMM D, YYYY';
+        break;
+      case 'long':
+        dateFormat = 'MMMM D, YYYY';
+        break;
+      case 'full':
+        dateFormat = 'dddd, MMMM D, YYYY';
+        break;
+      default:
+        // Custom format string
+        dateFormat = format;
+    }
+    
+    return {
+      date: now.format(dateFormat),
+      dayOfWeek: now.format('dddd'),
+      month: now.format('MMMM'),
+      dayOfMonth: now.date(),
+      year: now.year(),
+      quarter: now.quarter(),
+      weekOfYear: now.week(),
+      dayOfYear: now.dayOfYear()
+    };
+  } catch (error) {
+    throw new TimezoneError(`Failed to get current date for timezone ${timezone}: ${error}`);
+  }
+}
+
+/**
+ * Gets both current date and time from a postal code
+ */
+export function getDateTimeFromPostalCode(code: string, options: {
+  timeFormat?: '12' | '24';
+  dateFormat?: 'short' | 'medium' | 'long' | 'full' | string;
+} = {}): {
+  postalCode: string;
+  timezone: string;
+  timezoneName: string;
+  time: string;
+  date: string;
+  dateTime: string;
+  isDST: boolean;
+  utcOffset: string;
+  dayOfWeek: string;
+  additionalInfo: {
+    month: string;
+    dayOfMonth: number;
+    year: number;
+    quarter: number;
+    weekOfYear: number;
+    dayOfYear: number;
+  };
+} {
+  const { timeFormat = '12', dateFormat = 'medium' } = options;
+  
+  try {
+    // Get timezone from postal code
+    const timezoneInfo = getTimezoneFromPostalCode(code);
+    
+    // Get current time info
+    const timeInfo = getCurrentTimeInTimezone(timezoneInfo.timezone, timeFormat);
+    
+    // Get current date info
+    const dateInfo = getCurrentDateInTimezone(timezoneInfo.timezone, dateFormat);
+    
+    // Create combined date-time string
+    const now = moment.tz(timezoneInfo.timezone);
+    const dateTimeFormat = timeFormat === '12' ? 'MMM D, YYYY h:mm A z' : 'MMM D, YYYY HH:mm z';
+    const dateTime = now.format(dateTimeFormat);
+    
+    return {
+      postalCode: code.trim().toUpperCase(),
+      timezone: timezoneInfo.timezone,
+      timezoneName: timezoneInfo.name,
+      time: timeInfo.time,
+      date: dateInfo.date,
+      dateTime,
+      isDST: timeInfo.isDST,
+      utcOffset: timeInfo.utcOffset,
+      dayOfWeek: dateInfo.dayOfWeek,
+      additionalInfo: {
+        month: dateInfo.month,
+        dayOfMonth: dateInfo.dayOfMonth,
+        year: dateInfo.year,
+        quarter: dateInfo.quarter,
+        weekOfYear: dateInfo.weekOfYear,
+        dayOfYear: dateInfo.dayOfYear
+      }
+    };
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof TimezoneError) {
+      throw error;
+    }
+    throw new TimezoneError(`Failed to get date/time for postal code ${code}: ${error}`);
+  }
+}
+
+/**
+ * Gets date for a specific date in a timezone (useful for date calculations)
+ */
+export function getDateInTimezone(
+  timezone: string, 
+  date: string | Date | moment.Moment,
+  format: 'short' | 'medium' | 'long' | 'full' | string = 'medium'
+): {
+  date: string;
+  dayOfWeek: string;
+  month: string;
+  dayOfMonth: number;
+  year: number;
+  isWeekend: boolean;
+  isToday: boolean;
+} {
+  try {
+    const targetDate = moment.tz(date, timezone);
+    const today = moment.tz(timezone);
+    
+    let dateFormat: string;
+    switch (format) {
+      case 'short':
+        dateFormat = 'M/D/YYYY';
+        break;
+      case 'medium':
+        dateFormat = 'MMM D, YYYY';
+        break;
+      case 'long':
+        dateFormat = 'MMMM D, YYYY';
+        break;
+      case 'full':
+        dateFormat = 'dddd, MMMM D, YYYY';
+        break;
+      default:
+        dateFormat = format;
+    }
+    
+    const dayOfWeek = targetDate.day(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isToday = targetDate.isSame(today, 'day');
+    
+    return {
+      date: targetDate.format(dateFormat),
+      dayOfWeek: targetDate.format('dddd'),
+      month: targetDate.format('MMMM'),
+      dayOfMonth: targetDate.date(),
+      year: targetDate.year(),
+      isWeekend,
+      isToday
+    };
+  } catch (error) {
+    throw new TimezoneError(`Failed to get date for timezone ${timezone}: ${error}`);
+  }
+}
+
+/**
  * Checks if a given timezone string is valid
  */
 export function isValidTimezone(timezone: string): boolean {
@@ -196,4 +371,40 @@ export function getAvailableTimezones(): string[] {
 export function formatTimeForVoice(timezone: string, format: '12' | '24' = '12'): string {
   const timeInfo = getCurrentTimeInTimezone(timezone, format);
   return timeInfo.time;
+}
+
+/**
+ * Format date for voice agent responses
+ */
+export function formatDateForVoice(timezone: string, format: 'short' | 'medium' | 'long' = 'medium'): string {
+  const dateInfo = getCurrentDateInTimezone(timezone, format);
+  return dateInfo.date;
+}
+
+/**
+ * Format date and time for voice agent responses
+ */
+export function formatDateTimeForVoice(timezone: string, options: {
+  timeFormat?: '12' | '24';
+  dateFormat?: 'short' | 'medium' | 'long';
+} = {}): string {
+  const { timeFormat = '12', dateFormat = 'medium' } = options;
+  const now = moment.tz(timezone);
+  
+  let voiceDateFormat: string;
+  switch (dateFormat) {
+    case 'short':
+      voiceDateFormat = timeFormat === '12' ? 'M/D/YYYY h:mm A' : 'M/D/YYYY HH:mm';
+      break;
+    case 'medium':
+      voiceDateFormat = timeFormat === '12' ? 'MMM D, YYYY h:mm A' : 'MMM D, YYYY HH:mm';
+      break;
+    case 'long':
+      voiceDateFormat = timeFormat === '12' ? 'MMMM D, YYYY h:mm A' : 'MMMM D, YYYY HH:mm';
+      break;
+    default:
+      voiceDateFormat = timeFormat === '12' ? 'MMM D, YYYY h:mm A' : 'MMM D, YYYY HH:mm';
+  }
+  
+  return now.format(voiceDateFormat);
 }
