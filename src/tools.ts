@@ -22,7 +22,7 @@ export function registerTools(server: McpServer): void {
     "getBusinessTime",
     {
       title: "Get Current Business Time",
-      description: "Get the current local time for a business location using ZIP code or postal code. Perfect for 'What time is it there?' questions.",
+      description: "Get the current local time and date for a business location using ZIP code or postal code. Perfect for 'What time is it there?' questions.",
       inputSchema: GetBusinessTimeSchema.shape
     },
     async ({ zipCode, format = "12" }: { zipCode: string; format?: "12" | "24" }) => {
@@ -33,15 +33,26 @@ export function registerTools(server: McpServer): void {
         // Get current time information
         const timeInfo = getCurrentTimeInTimezone(timezone, format as "12" | "24");
         
+        // Get current date information
+        const dateInfo = getCurrentDateInTimezone(timezone, "medium");
+        
         // Format for voice response
-        const formatted = `It is currently ${timeInfo.time} in the ${zipCode} area.`;
+        const formatted = `It is currently ${timeInfo.time} on ${dateInfo.dayOfWeek}, ${dateInfo.date} in the ${zipCode} area.`;
         
         const result: BusinessTimeResult = {
           currentTime: timeInfo.time,
           timezone: timezone,
           isDST: timeInfo.isDST,
           zipCode: zipCode,
-          formatted: formatted
+          formatted: formatted,
+          currentDate: dateInfo.date,
+          dayOfWeek: dateInfo.dayOfWeek,
+          month: dateInfo.month,
+          dayOfMonth: dateInfo.dayOfMonth,
+          year: dateInfo.year,
+          quarter: dateInfo.quarter,
+          weekOfYear: dateInfo.weekOfYear,
+          dayOfYear: dateInfo.dayOfYear
         };
         
         return {
