@@ -120,20 +120,22 @@ export function registerTools(server: McpServer): void {
   );
 
   // Tool 3: Get detailed timezone information
+// Tool 3: Get detailed timezone information
   server.registerTool(
     "getTimezoneInfo",
     {
       title: "Get Timezone Information",
-      description: "Get comprehensive timezone details for a location including DST status, UTC offset, and timezone name. Useful for scheduling and time coordination.",
+      description: "Get comprehensive timezone details for a location including DST status, UTC offset, timezone name, and detailed date information. Useful for scheduling and time coordination.",
       inputSchema: GetTimezoneInfoSchema.shape
     },
     async ({ zipCode }: { zipCode: string }) => {
       try {
         const { timezone, name: timezoneName } = getTimezoneFromPostalCode(zipCode);
         const timeInfo = getCurrentTimeInTimezone(timezone, "12");
+        const dateInfo = getCurrentDateInTimezone(timezone, "full");
         
         const dstStatus = timeInfo.isDST ? "observing daylight saving time" : "on standard time";
-        const formatted = `The ${zipCode} area is in the ${timezoneName} timezone, currently ${dstStatus}. The local time is ${timeInfo.time} (UTC${timeInfo.utcOffset}).`;
+        const formatted = `The ${zipCode} area is in the ${timezoneName} timezone, currently ${dstStatus}. Today is ${dateInfo.dayOfWeek}, ${dateInfo.date}. The local time is ${timeInfo.time} (UTC${timeInfo.utcOffset}). Additional details: It's day ${dateInfo.dayOfYear} of the year, week ${dateInfo.weekOfYear}, in ${dateInfo.month}, quarter ${dateInfo.quarter} of ${dateInfo.year}.`;
         
         const result: TimezoneInfoResult = {
           timezone: timezone,
@@ -141,7 +143,16 @@ export function registerTools(server: McpServer): void {
           currentTime: timeInfo.time,
           isDST: timeInfo.isDST,
           utcOffset: timeInfo.utcOffset,
-          zipCode: zipCode
+          zipCode: zipCode,
+          // Adding date information to the result
+          currentDate: dateInfo.date,
+          dayOfWeek: dateInfo.dayOfWeek,
+          month: dateInfo.month,
+          dayOfMonth: dateInfo.dayOfMonth,
+          year: dateInfo.year,
+          quarter: dateInfo.quarter,
+          weekOfYear: dateInfo.weekOfYear,
+          dayOfYear: dateInfo.dayOfYear
         };
         
         return {
