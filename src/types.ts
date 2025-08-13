@@ -58,6 +58,15 @@ export interface TimezoneInfoResult {
   isDST: boolean;
   utcOffset: string;
   zipCode: string;
+  // New date fields
+  currentDate: string;
+  dayOfWeek: string;
+  month: string;
+  dayOfMonth: number;
+  year: number;
+  quarter: number;
+  weekOfYear: number;
+  dayOfYear: number;
 }
 
 // Error types
