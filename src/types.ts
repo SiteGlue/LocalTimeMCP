@@ -39,6 +39,15 @@ export interface BusinessTimeResult {
   isDST: boolean;
   zipCode: string;
   formatted: string;
+  // New date fields
+  currentDate: string;
+  dayOfWeek: string;
+  month: string;
+  dayOfMonth: number;
+  year: number;
+  quarter: number;
+  weekOfYear: number;
+  dayOfYear: number;
 }
 
 export interface BusinessHoursResult {
