@@ -9,7 +9,7 @@ import {
   ValidationError,
   TimezoneError
 } from './types.js';
-import { getTimezoneFromPostalCode, getCurrentTimeInTimezone } from './timezoneUtils.js';
+import { getTimezoneFromPostalCode, getCurrentTimeInTimezone, getCurrentDateInTimezone } from './timezoneUtils.js';
 import { checkBusinessHours } from './buisnessHours.js';
 
 /**
@@ -120,7 +120,6 @@ export function registerTools(server: McpServer): void {
   );
 
   // Tool 3: Get detailed timezone information
-// Tool 3: Get detailed timezone information
   server.registerTool(
     "getTimezoneInfo",
     {
@@ -144,7 +143,6 @@ export function registerTools(server: McpServer): void {
           isDST: timeInfo.isDST,
           utcOffset: timeInfo.utcOffset,
           zipCode: zipCode,
-          // Adding date information to the result
           currentDate: dateInfo.date,
           dayOfWeek: dateInfo.dayOfWeek,
           month: dateInfo.month,
