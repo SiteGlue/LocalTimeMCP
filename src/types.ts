@@ -26,6 +26,15 @@ export interface BusinessHours {
   sunday: { open: string; close: string; closed?: boolean };
 }
 
+// Holiday information interface
+export interface HolidayInfo {
+  isHoliday: boolean;
+  name?: string;
+  date?: string;
+  type?: string;
+  reason?: string;
+}
+
 // Timezone mapping interfaces
 export interface TimezoneMapping {
   timezone: string;
@@ -39,7 +48,7 @@ export interface BusinessTimeResult {
   isDST: boolean;
   zipCode: string;
   formatted: string;
-  // New date fields
+  // Date fields
   currentDate: string;
   dayOfWeek: string;
   month: string;
@@ -48,16 +57,29 @@ export interface BusinessTimeResult {
   quarter: number;
   weekOfYear: number;
   dayOfYear: number;
+  // Holiday fields
+  holidayInfo?: HolidayInfo;
+  upcomingHolidays?: Array<{ name: string; date: string; daysFromNow: number }>;
 }
 
 export interface BusinessHoursResult {
   isOpen: boolean;
   nextOpenTime?: string;
+  nextOpenDate?: string;
+  nextOpenDateTime?: string;
   nextCloseTime?: string;
+  nextCloseDate?: string;
+  nextCloseDateTime?: string;
   reasoning: string;
   currentTime: string;
+  currentDate: string;
+  currentDateTime: string;
   businessType: string;
+  timezone: string;
   todayHours?: { open: string; close: string; closed?: boolean };
+  // Holiday fields
+  holidayInfo?: HolidayInfo;
+  upcomingHolidays?: Array<{ name: string; date: string; daysFromNow: number }>;
 }
 
 export interface TimezoneInfoResult {
@@ -67,7 +89,7 @@ export interface TimezoneInfoResult {
   isDST: boolean;
   utcOffset: string;
   zipCode: string;
-  // New date fields
+  // Date fields
   currentDate: string;
   dayOfWeek: string;
   month: string;
@@ -76,6 +98,9 @@ export interface TimezoneInfoResult {
   quarter: number;
   weekOfYear: number;
   dayOfYear: number;
+  // Holiday fields
+  holidayInfo?: HolidayInfo;
+  upcomingHolidays?: Array<{ name: string; date: string; daysFromNow: number }>;
 }
 
 // Error types
@@ -93,6 +118,7 @@ export class TimezoneError extends Error {
   }
 }
 
+// Type exports
 export type BusinessType = z.infer<typeof CheckBusinessHoursSchema>['businessType'];
 export type GetBusinessTimeInput = z.infer<typeof GetBusinessTimeSchema>;
 export type CheckBusinessHoursInput = z.infer<typeof CheckBusinessHoursSchema>;
